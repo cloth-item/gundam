@@ -195,7 +195,7 @@ public class WebController {
 	public Map<String, Object> loginVerify(@RequestParam("userName") String userName,
 			@RequestParam("password") String userPassword, HttpSession session) {
 		//初始化结果集及相关数据
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<String, Object>();
 		int code = 0;
 		String message = "用户名有误";
 		boolean result = false;
@@ -231,7 +231,7 @@ public class WebController {
 	@RequestMapping("/api/delete")
 	public Map<String, Object> delete(@RequestParam("id") int id) {
 		//初始化结果集及相关数据
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<String, Object>();
 		int code = 0;
 		String message = "删除失败";
 		boolean result = false;
@@ -251,7 +251,7 @@ public class WebController {
 	@RequestMapping("/api/buy")
 	public Map<String, Object> buy(@RequestParam("id") int id, HttpSession session) {
 		//初始化结果集及相关数据
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<String, Object>();
 		int code = 0;
 		String message = "购买失败";
 		boolean result = false;
@@ -291,7 +291,7 @@ public class WebController {
 		if(!session.isNew()) { //如果session不是新建的
 			User userInSession = (User) session.getAttribute("user");
 			if(userInSession != null) {//如果从session中获取的值不为空，即有效session
-				Map<String, Object> user = new HashMap<>();
+				Map<String, Object> user = new HashMap<String, Object>();
 				user.put("username", userInSession.getNickName());
 				user.put("usertype", userInSession.getUserType());
 				return user;

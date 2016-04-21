@@ -120,7 +120,7 @@ public class ProductOperatorImpl implements ProductOperator {
 	public List<Product> fdUserBuyList(int userId) {
 		List<Trx> list =  trxDao.selectAllWithUser(userId);
 		if(list != null) {
-			List<Product> buyList = new ArrayList<>();
+			List<Product> buyList = new ArrayList<Product>();
 			for(Trx trx : list) {
 				Product product = productDao.selectMiniProduct(trx.getProductId());
 				product = decodingBlob(product);
