@@ -12,9 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.lighte.course.meta.Product;
+import com.lighte.course.meta.ProductInfo;
 import com.lighte.course.meta.User;
 import com.lighte.course.service.ProductOperator;
 import com.lighte.course.service.UserOperator;
@@ -28,7 +29,7 @@ public class WebController {
 	@Autowired
 	private ProductOperator operator;
 	
-	@RequestMapping("/login")
+	@RequestMapping(value="/login", method=RequestMethod.GET)
 	public String login(HttpSession session, ModelMap map) {
 		//如果从session中获取到了user，就传入
 		Map<String, Object> user = isUserInSession(session);
@@ -39,7 +40,7 @@ public class WebController {
 		return "login";
 	}
 	
-	@RequestMapping("/logout")
+	@RequestMapping(value="/logout", method=RequestMethod.GET)
 	public String logout(HttpSession session, ModelMap map) {
 		//如果session中有user，就删除
 		if(session.getAttribute("user") != null) {
@@ -55,7 +56,7 @@ public class WebController {
 		return "login";
 	}
 	
-	@RequestMapping("/")
+	@RequestMapping(value="/", method=RequestMethod.GET)
 	public String index(HttpSession session, ModelMap map) {
 		//如果从session中获取到了user，就传入
 		Map<String, Object> user = isUserInSession(session);
@@ -64,7 +65,7 @@ public class WebController {
 		}
 		
 		//如果从数据库中获取到了productList，就传入
-		List<Product> productList = this.operator.findMiniProducts();
+		List<ProductInfo> productList = this.operator.findMiniProducts();
 		if(productList != null) { 
 			map.addAttribute("productList", productList); 
 		}
@@ -72,7 +73,7 @@ public class WebController {
 		return "index";
 	}
 	
-	@RequestMapping("/show")
+	@RequestMapping(value="/show", method=RequestMethod.GET)
 	public String showOne(@RequestParam("id") int id, HttpSession session,
 			ModelMap map) throws UnsupportedEncodingException {
 		//如果从session中获取到了user，就传入
@@ -82,7 +83,7 @@ public class WebController {
 		}
 		
 		//如果从数据库中获取到了product，就传入
-		Product product = this.operator.findMoreFilds(id); 
+		ProductInfo product = this.operator.findMoreFilds(id); 
 		if(product != null) { 
 			map.addAttribute("product", product);
 		}
@@ -90,108 +91,114 @@ public class WebController {
 		return "show";
 	}
 	
-	@RequestMapping("/account")
+	@RequestMapping(value="/account", method=RequestMethod.GET)
 	public String account(HttpSession session, ModelMap map) {
 		//如果从session中获取到了user，就传入
 		//同时，根据userId从数据库中查找buyList(包含image),如果有就传入
 		Map<String, Object> user = isUserInSession(session);
 		if(user != null) {
 			map.addAttribute("user", user);
+			
 			User userInSession = (User) session.getAttribute("user");
-			List<Product> buyList = this.operator.fdUserBuyList(userInSession.getId());
+			List<ProductInfo> buyList = this.operator.fdUserBuyList(userInSession.getId());
 			if(buyList != null) {
 				map.put("buyList", buyList);
 			}
+			return "account";
 		}
 		
-		return "account";
+		return "error";
 	}
 	
-	@RequestMapping("/public")
+	@RequestMapping(value="/public", method=RequestMethod.GET)
 	public String publicItems(HttpSession session, ModelMap map) {
 		//如果从session中获取到了user，就传入
 		Map<String, Object> user = isUserInSession(session);
 		if(user != null) {
 			map.addAttribute("user", user);
+			return "public";
 		}
 		
-		return "public";
+		return "error";
 	}
 	
-	@RequestMapping("/publicSubmit")
+	@RequestMapping(value="/publicSubmit", method=RequestMethod.POST)
 	public String publicSubmit(HttpServletRequest request, HttpSession session,
 			ModelMap map) throws UnsupportedEncodingException {
 		//如果从session中获取到了user，就传入
 		Map<String, Object> user = isUserInSession(session);
 		if(user != null) {
 			map.addAttribute("user", user);
+			
+			//设置request的解码字符集，并从中获取对应的参数
+			request.setCharacterEncoding("utf-8");
+			String title = request.getParameter("title");
+			String summary = request.getParameter("summary");
+			String image = request.getParameter("image");
+			String detail = request.getParameter("detail");
+			long price = (long) (Float.valueOf(request.getParameter("price"))*100);
+			
+			//向数据库存入一行数据，同时获取其主键，根据主键查找数据并传入
+			int id = this.operator.createProduct(title, summary, image, detail, price); 
+			if(id > 0) { 
+				ProductInfo product = this.operator.findProduct(id); 
+				map.addAttribute("product", product);
+			}
+			return "publicSubmit";
 		}
 		
-		//设置request的解码字符集，并从中获取对应的参数
-		request.setCharacterEncoding("utf-8");
-		String title = request.getParameter("title");
-		String summary = request.getParameter("summary");
-		String image = request.getParameter("image");
-		String detail = request.getParameter("detail");
-		int price = Integer.valueOf(request.getParameter("price"));
-		
-		//向数据库存入一行数据，同时获取其主键，根据主键查找数据并传入
-		int id = this.operator.createProduct(title, summary, image, detail, price); 
-		if(id > 0) { 
-			Product product = this.operator.findProduct(id); 
-			map.addAttribute("product", product);
-		}
-		
-		return "publicSubmit";
+		return "error";
 	}
 	
-	@RequestMapping("/edit")
+	@RequestMapping(value="/edit", method=RequestMethod.GET)
 	public String edit(@RequestParam("id") int id, HttpSession session, ModelMap map) {
 		//如果从session中获取到了user，就传入
 		Map<String, Object> user = isUserInSession(session);
 		if(user != null) {
 			map.addAttribute("user", user);
+			
+			//如果从数据库中获取到了product，就传入
+			ProductInfo product = this.operator.findProduct(id); 
+			if(product != null) { 
+				map.addAttribute("product", product); 
+			}
+			return "edit";
 		}
 		
-		//如果从数据库中获取到了product，就传入
-		Product product = this.operator.findProduct(id); 
-		if(product != null) { 
-			map.addAttribute("product", product); 
-		}
-		
-		return "edit";
+		return "error";
 	}
 	
-	@RequestMapping("/editSubmit")
+	@RequestMapping(value="/editSubmit", method=RequestMethod.POST)
 	public String editSubmit(HttpServletRequest request, HttpSession session,
 			ModelMap map) throws UnsupportedEncodingException {
 		//如果从session中获取到了user，就传入
 		Map<String, Object> user = isUserInSession(session);
 		if(user != null) {
 			map.addAttribute("user", user);
-		}
-		
-		//设置request的解码字符集，并从中获取对应的参数
-		request.setCharacterEncoding("utf-8"); 
-		int id = Integer.valueOf(request.getParameter("id"));
-		String title = request.getParameter("title");
-		String summary = request.getParameter("summary");
-		String image = request.getParameter("image");
-		String detail = request.getParameter("detail");
-		int price = Integer.valueOf(request.getParameter("price"));
-		
-		//先根据id向数据库更新一行数据，再根据id查找此行数据并返回
-		if(this.operator.changeProduct(id, title, summary, image, detail, price) > 0) { 
-			Product product = this.operator.findProduct(id); 
-			if(product != null) { 
-				map.addAttribute("product", product); 
+			
+			//设置request的解码字符集，并从中获取对应的参数
+			request.setCharacterEncoding("utf-8"); 
+			int id = Integer.valueOf(request.getParameter("id"));
+			String title = request.getParameter("title");
+			String summary = request.getParameter("summary");
+			String image = request.getParameter("image");
+			String detail = request.getParameter("detail");
+			long price = (long) (Float.valueOf(request.getParameter("price"))*100);
+			
+			//先根据id向数据库更新一行数据，再根据id查找此行数据并返回
+			if(this.operator.changeProduct(id, title, summary, image, detail, price) > 0) { 
+				ProductInfo product = this.operator.findProduct(id); 
+				if(product != null) { 
+					map.addAttribute("product", product); 
+				}
+				return "editSubmit";
 			}
 		}
 		
-		return "editSubmit";
+		return "error";
 	}
 	
-	@RequestMapping("/api/login")
+	@RequestMapping(value="/api/login", method=RequestMethod.POST)
 	public Map<String, Object> loginVerify(@RequestParam("userName") String userName,
 			@RequestParam("password") String userPassword, HttpSession session) {
 		//初始化结果集及相关数据
@@ -228,59 +235,72 @@ public class WebController {
 		return map;
 	}
 	
-	@RequestMapping("/api/delete")
-	public Map<String, Object> delete(@RequestParam("id") int id) {
+	@RequestMapping(value="/api/delete", method=RequestMethod.POST)
+	public Map<String, Object> delete(@RequestParam("id") int id, HttpSession session, ModelMap map) {
 		//初始化结果集及相关数据
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> status = new HashMap<String, Object>();
 		int code = 0;
 		String message = "删除失败";
 		boolean result = false;
 		
-		if(this.operator.deleteProduct(id)) {
-			code = 200;
-			message = "删除成功";
-			result = true;
+		//如果从session中获取到了user，就传入
+		Map<String, Object> user = isUserInSession(session);
+		if(user != null) {
+			map.addAttribute("user", user);
+						
+			if(this.operator.deleteProduct(id)) {
+				code = 200;
+				message = "删除成功";
+				result = true;
+			}
+			
+			status.put("code", code);
+			status.put("message", message);
+			status.put("result", result);
 		}
 		
-		map.put("code", code);
-		map.put("message", message);
-		map.put("result", result);
-		return map;
+		return status;
 	}
 	
-	@RequestMapping("/api/buy")
-	public Map<String, Object> buy(@RequestParam("id") int id, HttpSession session) {
+	@RequestMapping(value="/api/buy", method=RequestMethod.POST)
+	public Map<String, Object> buy(@RequestParam("id") int id, HttpSession session, ModelMap map) {
 		//初始化结果集及相关数据
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> status = new HashMap<String, Object>();
 		int code = 0;
 		String message = "购买失败";
 		boolean result = false;
 		
-		int productId = -1;
-		int userId = -1;
-		int price = -1;
-		
-		User userInSession = (User) session.getAttribute("user");
-		Product product = this.operator.findProduct(id);
-		
-		if(userInSession != null && product != null) {
-			userId = userInSession.getId();
-			productId = product.getId();
-			price = product.getPrice();
+		//如果从session中获取到了user，就传入
+		Map<String, Object> user = isUserInSession(session);
+		if(user != null) {
+			map.addAttribute("user", user);
 			
-			if(this.operator.buy(productId, userId, price, System.currentTimeMillis()) > 0) {
-				code = 200;
-				message = "购买成功";
-				result = true;
+			int productId = -1;
+			int userId = -1;
+			long price = -1;
+			
+			User userInSession = (User) session.getAttribute("user");
+			ProductInfo product = this.operator.findProduct(id);
+			
+			if(userInSession != null && product != null) {
+				userId = userInSession.getId();
+				productId = product.getId();
+				price = (long) (product.getPrice()*100);
+				
+				if(this.operator.buy(productId, userId, price, System.currentTimeMillis()) > 0) {
+					code = 200;
+					message = "购买成功";
+					result = true;
+				}
 			}
+			
+			status.put("code", code);
+			status.put("message", message);
+			status.put("result", result);
 		}
 		
-		map.put("code", code);
-		map.put("message", message);
-		map.put("result", result);
-		return map;
+		return status;
 	}
-	
 	
 	/**
 	 * 如果是有效session，从数据库查找对应数据，封装进user表并返回

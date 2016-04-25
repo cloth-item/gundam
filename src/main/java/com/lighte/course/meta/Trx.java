@@ -1,7 +1,7 @@
 package com.lighte.course.meta;
 
 /**
- * 封装交易数据
+ * 交易数据
  * @author lighte
  *
  */
@@ -10,7 +10,7 @@ public class Trx {
 	private int id;
 	private int productId;
 	private int userId;
-	private int price;
+	private long price;
 	private long time;
 	
 	public int getProductId() {
@@ -25,10 +25,10 @@ public class Trx {
 	public void setUserId(int userId) {
 		this.userId = userId;
 	}
-	public int getPrice() {
+	public long getPrice() {
 		return price;
 	}
-	public void setPrice(int price) {
+	public void setPrice(long price) {
 		this.price = price;
 	}
 	public long getTime() {

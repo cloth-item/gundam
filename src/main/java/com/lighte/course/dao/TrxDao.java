@@ -41,7 +41,4 @@ public interface TrxDao {
 	@Select("select * from trx where contentId=#{productId}")
 	public Trx selectWithProduct(int productId);
 
-//	@Select({"select content.id as id, content.title as title, trx.price as buyPrice, trx.time as buyTime ",
-//	"from trx left join content on trx.contentId=content.id where trx.personId=#{userId}"})
-//	public List<Product> selectBuyList(int userId);
 }

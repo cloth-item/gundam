@@ -1,7 +1,7 @@
 package com.lighte.course.meta;
 
 /**
- * 封装已购买的商品
+ * 产品数据
  * @author lighte
  *
  */
@@ -10,20 +10,9 @@ public class Product {
 	private int id;
 	private String title;
 	private String summary;
-	private String image;
-	private String detail;
-	private int price;
-	private boolean isBuy;
-	private boolean isSell;
-	private int buyPrice;
-	private long buyTime;
-	
-	public void getTrxInfo(Trx trx) {
-		this.isBuy = true;
-		this.isSell = true;
-		this.buyPrice = trx.getPrice();
-		this.buyTime = trx.getTime();
-	}
+	private byte[] image;
+	private byte[] detail;
+	private long price;
 	
 	public int getId() {
 		return id;
@@ -43,46 +32,22 @@ public class Product {
 	public void setSummary(String summary) {
 		this.summary = summary;
 	}
-	public String getImage() {
+	public byte[] getImage() {
 		return image;
 	}
-	public void setImage(String image) {
+	public void setImage(byte[] image) {
 		this.image = image;
 	}
-	public String getDetail() {
+	public byte[] getDetail() {
 		return detail;
 	}
-	public void setDetail(String detail) {
+	public void setDetail(byte[] detail) {
 		this.detail = detail;
 	}
-	public int getPrice() {
+	public long getPrice() {
 		return price;
 	}
-	public void setPrice(int price) {
+	public void setPrice(long price) {
 		this.price = price;
-	}
-	public boolean getIsBuy() {
-		return isBuy;
-	}
-	public void setIsBuy(boolean isBuy) {
-		this.isBuy = isBuy;
-	}
-	public boolean getIsSell() {
-		return isSell;
-	}
-	public void setIsSell(boolean isSell) {
-		this.isSell = isSell;
-	}
-	public int getBuyPrice() {
-		return buyPrice;
-	}
-	public void setBuyPrice(int buyPrice) {
-		this.buyPrice = buyPrice;
-	}
-	public long getBuyTime() {
-		return buyTime;
-	}
-	public void setBuyTime(long buyTime) {
-		this.buyTime = buyTime;
 	}
 }
